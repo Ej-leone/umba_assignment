@@ -3,6 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { getQueueToken } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { Repository } from 'typeorm';
+import { BadRequestException } from '@nestjs/common';
 
 import { TransactionService } from './transaction.service';
 import { Quote } from 'src/quote/quote.entity';
@@ -50,6 +51,7 @@ describe('TransactionService', () => {
   it('creates a transaction for a valid quote and enqueues initialize step', async () => {
     const dto: CreateTransactionDto = {
       quoteId: 'quote-id',
+      mobilePhone: '+254700000000',
     } as any;
     const idempotencyKey = 'idem-key';
 
@@ -135,6 +137,34 @@ describe('TransactionService', () => {
     await expect(
       service.createTransaction(dto, 'idem-key'),
     ).rejects.toThrowError('Quote expired');
+
+    expect(transactionQueue.add).not.toHaveBeenCalled();
+  });
+
+  it('throws BadRequestException when payin method is mobile money and no mobile phone is provided', async () => {
+    const dto: CreateTransactionDto = {
+      quoteId: 'quote-id',
+    } as any;
+    const idempotencyKey = 'idem-key';
+
+    const futureDate = new Date(Date.now() + 60_000);
+    const quote: Quote = {
+      id: dto.quoteId,
+      currencyIn: 'USD',
+      currencyOut: 'KES',
+      amount: 100,
+      fee: 5,
+      payinMethod: 'mobile_money',
+      payoutMethod: 'mobile_money',
+      createdAt: new Date(),
+      expiresAt: futureDate,
+    };
+
+    quoteRepository.findOne.mockResolvedValue(quote);
+
+    await expect(
+      service.createTransaction(dto, idempotencyKey),
+    ).rejects.toBeInstanceOf(BadRequestException);
 
     expect(transactionQueue.add).not.toHaveBeenCalled();
   });

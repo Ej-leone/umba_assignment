@@ -2,6 +2,15 @@
 ## Assumptions 
  1.  one does not need an account to  execute the fx just provide the necessary information
  2. the currency pairs are static .
+ 3. only two payin and payout methods mobile money and banks 
+
+
+## if more time
+
+  - added authentication and kyc 
+  - added sentry for monitoring 
+   - implemented an audit log 
+
 
 
  ## Architecture 
@@ -19,31 +28,67 @@ fx nest js backend system . provides quotes and executes  the quotes to mobile m
 $ yarn install
 ```
 
-## Running the app
+## Running the app (locally)
 
 ```bash
 # development
 $ yarn run start
 
-# watch mode
+# watch mode (uses .env)
 $ yarn run start:dev
 
-# production mode
+# production mode (assumes you've built the app)
 $ yarn run start:prod
 ```
 
-## Running with Docker  
+## Running with Docker
+
+This project includes a `docker-compose.yml` that runs:
+
+- api (NestJS app)
+- postgres (PostgreSQL database)
+- redis (for queues)
 
 ```bash
-# development
-$ yarn run start
+# start all services in the background
+$ yarn run dev:docker
+# or, directly:
+$ docker-compose up -d
 
-# watch mode
-$ yarn run start:dev
+# rebuild images and start
+$ yarn run dev:docker:rebuild
+# or:
+$ docker-compose up --build
 
-# production mode
-$ yarn run start:prod
+# stop and remove containers
+$ yarn run dev:docker:down
+# or:
+$ docker-compose down
 ```
+
+By default, the API will be available at `http://localhost:3000`.
+
+## API Documentation (Swagger)
+
+Swagger is configured and exposed at the `/api-docs` path.
+
+- When running locally (for example with `yarn start:dev`):
+  - Open `http://localhost:3000/api-docs`
+- When running via Docker (`yarn dev:docker` / `docker-compose up`):
+  - Open `http://localhost:3000/api-docs`
+
+From there you can explore the endpoints, view request/response schemas, and execute requests directly from the browser.
+
+## Queue Monitoring (Bull Board)
+
+The application also exposes a Bull Board UI to monitor BullMQ queues at the `/admin/queues` path.
+
+- When running locally (for example with `yarn start:dev`):
+  - Open `http://localhost:3000/admin/queues`
+- When running via Docker (`yarn dev:docker` / `docker-compose up`):
+  - Open `http://localhost:3000/admin/queues`
+
+You can use this UI to see queued, active, failed, and completed jobs and inspect their payloads.
 
 
 ## Test
