@@ -5,15 +5,13 @@
 
 
  ## Architecture 
-  scheduer to fetch rates in and update in-memory database (redis)
-  use queing step system to run the transactions different steps atomically  for scale 
-  store and update transaction in postgres 
-  
+ 
+<img width="4043" height="1239" alt="Untitled-2025-06-29-1723-2 excalidraw" src="https://github.com/user-attachments/assets/1b85f868-71a8-4e0a-882a-31af0921e9b6" />
 
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+fx nest js backend system . provides quotes and executes  the quotes to mobile money and banks 
 
 ## Installation
 
