@@ -1,6 +1,12 @@
 import { plainToInstance } from 'class-transformer';
 import { Type } from 'class-transformer';
-import { IsEnum, IsNumber, IsString, IsUrl, validateSync } from 'class-validator';
+import {
+  IsEnum,
+  IsNumber,
+  IsString,
+  IsUrl,
+  validateSync,
+} from 'class-validator';
 
 enum Environment {
   Development = 'development',
@@ -14,6 +20,14 @@ export class EnvironmentVariables {
   @Type(() => Number)
   @IsNumber()
   DATABASE_PORT: number;
+
+  @Type(() => Number)
+  @IsNumber()
+  RATE_EXPIRY_TIME: number;
+
+  @Type(() => Number)
+  @IsNumber()
+  PERCENTAGE_FEE: number;
 
   @IsString()
   DATABASE_HOST: string;
@@ -29,6 +43,9 @@ export class EnvironmentVariables {
 
   @IsUrl()
   RATES_API_URL: string;
+
+  @IsString()
+  REDIS_URL: string;
 }
 
 export function validateEnv(config: Record<string, any>) {
@@ -41,9 +58,13 @@ export function validateEnv(config: Record<string, any>) {
     DATABASE_PASSWORD: config.DATABASE_PASSWORD || config.DB_PASSWORD,
   };
 
-  const validatedConfig = plainToInstance(EnvironmentVariables, normalizedConfig, {
-    enableImplicitConversion: true,
-  });
+  const validatedConfig = plainToInstance(
+    EnvironmentVariables,
+    normalizedConfig,
+    {
+      enableImplicitConversion: true,
+    },
+  );
 
   const errors = validateSync(validatedConfig, {
     skipMissingProperties: false,
