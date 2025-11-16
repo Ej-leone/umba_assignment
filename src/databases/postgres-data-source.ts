@@ -19,9 +19,13 @@ export const dataSourceOptions: DataSourceOptions = {
   password: process.env.DATABASE_PASSWORD,
   database: process.env.DATABASE_NAME,
   entities: [Quote, Transaction],
-  migrations: ['src/migrations/*.ts'],
+  migrations: ['dist/migrations/*.js'],
   synchronize: process.env.NODE_ENV === 'development',
   logging: process.env.NODE_ENV === 'development',
+  ssl: {
+    rejectUnauthorized: false,
+    ca: process.env.CA_CERTIFICATE,
+  },
 };
 
 const dataSource = new DataSource(dataSourceOptions);

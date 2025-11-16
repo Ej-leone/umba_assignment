@@ -6,6 +6,7 @@ import {
   IsOptional,
   IsISO4217CurrencyCode,
   Min,
+  IsIn,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -28,10 +29,12 @@ export class CreateQuoteDto {
 
   @IsString()
   @IsOptional()
+  @IsIn(['mobile_money', 'bank'])
   payinMethod?: string;
 
   @IsString()
   @IsOptional()
+  @IsIn(['mobile_money', 'bank'])
   payoutMethod?: string;
 }
 

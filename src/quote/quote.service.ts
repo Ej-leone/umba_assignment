@@ -22,10 +22,12 @@ export class QuoteService {
     const rateExpiryTime = this.configService.get<string>('RATE_EXPIRY_TIME');
 
     this.feePercentage = new Decimal(percentageFromEnv);
+    this.rateExpiryTimeMs = Number(rateExpiryTime ?? '600000'); // default 10 minutes
   }
 
   private readonly logger = new Logger(QuoteService.name);
   private readonly feePercentage: Decimal;
+  private readonly rateExpiryTimeMs: number;
 
   async createQuote(createQuoteDto: CreateQuoteDto): Promise<QuoteResponseDto> {
     this.logger.debug({ createQuoteDto });
@@ -42,7 +44,7 @@ export class QuoteService {
       throw new Error('Rate not found');
     }
 
-    this.logger.debug({ rate, timestamp });
+   
 
     //calculate amounts using Decimal.js
     const amountDecimal = new Decimal(createQuoteDto.amount);
@@ -53,14 +55,7 @@ export class QuoteService {
     const fee = feeDecimal.toNumber();
     const convertedAmount = convertedAmountDecimal.toNumber();
 
-    this.logger.debug({
-      fee,
-      convertedAmount,
-      rateDecimal,
-      amountDecimal,
-      feeDecimal,
-      feePercentage: this.feePercentage,
-    });
+  
 
     //create quote and send result
     const quote = await this.quoteRepository.create({
@@ -93,10 +88,17 @@ export class QuoteService {
     if (!rate || !timestamp) {
       throw new NotFoundException('Rate not found');
     }
-    this.logger.debug({ rate, timestamp });
 
-    // if (timestamp < Date.now() - rateExpiryTime) {
-    //   throw new Error('Rate expired');
-    // }
+    const rateTimestampSeconds = Number(timestamp);
+    if (Number.isNaN(rateTimestampSeconds)) {
+      throw new Error('Invalid rate timestamp');
+    }
+
+    const rateTimestampMs = rateTimestampSeconds * 1000;
+    const now = Date.now();
+
+    if (now - rateTimestampMs > this.rateExpiryTimeMs) {
+      throw new Error('Rate expired');
+    }
   }
 }

@@ -21,6 +21,18 @@ export class CreateTransactionDto {
   @IsUUID()
   quoteId: string;
 
+  @IsString()
+  @IsOptional()
+  mobilePhone?: string;
+
+  @IsString()
+  @IsOptional()
+  bankAccountNumber?: string;
+
+  @IsString()
+  @IsOptional()
+  bank?: string;
+
   @IsEnum(TransactionStatus)
   @IsOptional()
   transactionStatus?: TransactionStatus;

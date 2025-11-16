@@ -7,11 +7,10 @@ import { TransactionModule } from './transaction/transaction.module';
 import { RatesModule } from './rates/rates.module';
 import { validateEnv } from './env.validation';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Quote } from './quote/quote.entity';
-import { Transaction } from './transaction/transaction.entity';
 import { RedisModule } from '@nestjs-redis/kit';
 import { BullModule, getQueueToken } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
+import { dataSourceOptions } from './databases/postgres-data-source';
 
 @Module({
   imports: [
@@ -34,22 +33,7 @@ import { Queue } from 'bullmq';
     BullModule.registerQueue({
       name: 'transactions',
     }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DATABASE_HOST,
-      port: parseInt(process.env.DATABASE_PORT, 10),
-      username: process.env.DATABASE_USER,
-      password: process.env.DATABASE_PASSWORD,
-      database: process.env.DATABASE_NAME,
-      entities: [Quote, Transaction],
-      migrations: ['dist/migrations/*.js'],
-      migrationsRun: false,
-      synchronize: true,
-      ssl: {
-        rejectUnauthorized: false,
-        ca: process.env.CA_CERTIFICATE,
-      },
-    }),
+    TypeOrmModule.forRoot(dataSourceOptions),
     QuoteModule,
     TransactionModule,
     RatesModule,

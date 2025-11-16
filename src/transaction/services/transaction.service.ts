@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   HttpException,
   HttpStatus,
   Injectable,
@@ -33,15 +34,16 @@ export class TransactionService {
     createTransactionDto: CreateTransactionDto,
     idempotencyKey: string,
   ): Promise<TransactionResponseDto> {
-  
-
     const transaction = await this.transactionRepository.findOne({
       where: {
         id: idempotencyKey,
       },
     });
     if (transaction) {
-      return plainToInstance(TransactionResponseDto, transaction);
+      throw new HttpException(
+        'Transaction already exists',
+        HttpStatus.CONFLICT,
+      );
     }
 
     //fetch quote from database
@@ -59,11 +61,32 @@ export class TransactionService {
       throw new HttpException('Quote expired', HttpStatus.CONFLICT);
     }
 
+    // Additional checks based on quote payin method
+    if (quote.payinMethod === 'mobile_money') {
+      if (!createTransactionDto.mobilePhone) {
+        throw new BadRequestException(
+          'mobilePhone is required for mobile_money payin method',
+        );
+      }
+    }
+
+    if (quote.payinMethod === 'bank') {
+      if (
+        !createTransactionDto.bankAccountNumber ||
+        !createTransactionDto.bank
+      ) {
+        throw new BadRequestException(
+          'bankAccountNumber and bank are required for bank payin method',
+        );
+      }
+    }
+
     await this.transactionQueue.add(
       'step-initialize',
       {
         quote: quote,
         idempotencyKey: idempotencyKey,
+        ...createTransactionDto,
       },
       {
         attempts: 3,
