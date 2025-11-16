@@ -19,6 +19,7 @@ export class QuoteService {
     private readonly configService: ConfigService,
   ) {
     const percentageFromEnv = this.configService.get<string>('PERCENTAGE_FEE');
+    const rateExpiryTime = this.configService.get<string>('RATE_EXPIRY_TIME');
 
     this.feePercentage = new Decimal(percentageFromEnv);
   }
@@ -93,7 +94,8 @@ export class QuoteService {
       throw new NotFoundException('Rate not found');
     }
     this.logger.debug({ rate, timestamp });
-    // if (timestamp < Date.now() - 60000) {
+
+    // if (timestamp < Date.now() - rateExpiryTime) {
     //   throw new Error('Rate expired');
     // }
   }

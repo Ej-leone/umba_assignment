@@ -1,6 +1,6 @@
 import { DataSource, DataSourceOptions } from 'typeorm';
-import { Quote } from './quote/quote.entity';
-import { Transaction } from './transaction/transaction.entity';
+import { Quote } from '../quote/quote.entity';
+import { Transaction } from '../transaction/transaction.entity';
 
 // Try to load dotenv if available (for CLI usage)
 try {
@@ -13,22 +13,17 @@ try {
 
 export const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',
-  host: process.env.DATABASE_HOST || process.env.DB_HOST || 'localhost',
-  port: parseInt(
-    process.env.DATABASE_PORT || process.env.DB_PORT || '5432',
-    10,
-  ),
-  username: process.env.DATABASE_USER || process.env.DB_USERNAME || 'root',
-  password:
-    process.env.DATABASE_PASSWORD || process.env.DB_PASSWORD || 'root',
-  database: process.env.DATABASE_NAME || process.env.DB_DATABASE || 'test',
+  host: process.env.DATABASE_HOST,
+  port: parseInt(process.env.DATABASE_PORT, 10),
+  username: process.env.DATABASE_USER,
+  password: process.env.DATABASE_PASSWORD,
+  database: process.env.DATABASE_NAME,
   entities: [Quote, Transaction],
   migrations: ['src/migrations/*.ts'],
-  synchronize: false,
+  synchronize: process.env.NODE_ENV === 'development',
   logging: process.env.NODE_ENV === 'development',
 };
 
 const dataSource = new DataSource(dataSourceOptions);
 
 export default dataSource;
-
